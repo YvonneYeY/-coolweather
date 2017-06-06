@@ -3,10 +3,9 @@ package com.a2017.yvonne.coolweather;
 import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.ProgressDialog;
-import android.os.Build;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,34 +52,45 @@ public class ChooseAreaFragment extends Fragment {
     private Province selectedProvince;
     private City selectedCity;
     private int currentLevel;
+    private int llll = 0;
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    @Nullable
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.choose_area, container, false);
         titleText = (TextView) view.findViewById(R.id.title_text);
         backButton = (Button) view.findViewById(R.id.back_button);
         listView = (ListView) view.findViewById(R.id.list_view);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, dataList);
+//        }
 
         listView.setAdapter(adapter);
         return view;
     }
 
+
     @Override
-    public void onActivityCreated( Bundle savedInstanceState) {
+    public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("onActivityCreated", "AAAAAA " + (llll++) + " " + currentLevel);
                 if (currentLevel == LEVEL_PROVINCE) {
                     selectedProvince = provinceList.get(position);
                     queryCities();
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = cityList.get(position);
                     queryCounties();
+                } else if (currentLevel == LEVEL_COUNTY) {
+                    String weatherId = countyList.get(position).getWeatherId();
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("weather_id", weatherId);
+                    Log.d("ChooseAreaWeather", weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
@@ -142,6 +152,7 @@ public class ChooseAreaFragment extends Fragment {
         if (countyList.size() > 0) {
             dataList.clear();
             for (County county : countyList) {
+                Log.d("County", "===> " + county.getCountyName());
                 dataList.add(county.getCountyName());
             }
             adapter.notifyDataSetChanged();
@@ -149,8 +160,8 @@ public class ChooseAreaFragment extends Fragment {
             currentLevel = LEVEL_COUNTY;
         } else {
             int provinceCode = selectedProvince.getProvinceCode();
-            int citycode = selectedCity.getCityCode();
-            String address = "http://guolin.tech/api/china/" + provinceCode + "/" + citycode;
+            int cityCode = selectedCity.getCityCode();
+            String address = "http://guolin.tech/api/china/" + provinceCode + "/" + cityCode;
             queryFromServer(address, "county");
         }
 
@@ -188,6 +199,7 @@ public class ChooseAreaFragment extends Fragment {
                 }
 
             }
+
             @Override
             public void onFailure(Call call, IOException e) {
                 getActivity().runOnUiThread(new Runnable() {

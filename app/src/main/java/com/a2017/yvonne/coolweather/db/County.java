@@ -1,5 +1,7 @@
 package com.a2017.yvonne.coolweather.db;
 
+import android.util.Log;
+
 import org.litepal.crud.DataSupport;
 
 /**
@@ -16,31 +18,33 @@ public class County extends DataSupport {
         return id;
     }
 
-    public int getCityId() {
-        return cityId;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getCountyName() {
+        Log.d("County", "id: " + id + ", cn: " + countyName + ", wi: " + weatherId + ", ci: " + cityId);
         return countyName;
+    }
+
+    public void setCountyName(String countyName) {
+        this.countyName = countyName;
     }
 
     public String getWeatherId() {
         return weatherId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setWeatherId(String weatherId) {
+        this.weatherId = weatherId;
+    }
+
+    public int getCityId() {
+        return cityId;
     }
 
     public void setCityId(int cityId) {
         this.cityId = cityId;
-    }
-
-    public void setCountyName(String countryName) {
-        this.countyName = countyName;
-    }
-
-    public void setWeatherId(String weatherId) {
-        this.weatherId = weatherId;
+        Log.d("County", "id: " + id + ", cn: " + countyName + ", wi: " + weatherId + ", ci: " + cityId);
     }
 }
