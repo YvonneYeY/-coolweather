@@ -50,11 +50,23 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView carWashText;
     private TextView sportText;
     private ImageView bingPicImg;
+    private int updateTime=8;
+    private int update;
+//    private String pic ;
+    String TAG="AutoUpdateService";
+
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+//        Intent i=getIntent();
+//        Bundle bundle=i.getExtras();
+//        update=bundle.getInt("u");
+//        Log.d(TAG, "onCreate: "+update);
+
+
         if (Build.VERSION.SDK_INT >= 21) {
             View decorView = getWindow().getDecorView();
             decorView.setSystemUiVisibility(
@@ -80,15 +92,24 @@ public class WeatherActivity extends AppCompatActivity {
         comfortText = (TextView) findViewById(R.id.confort_text);
         carWashText = (TextView) findViewById(R.id.car_wash_text);
         sportText = (TextView) findViewById(R.id.sport_text);
+//        pic="android.resource://com.a2017.yvonne.coolweather.android/drawable/a";
+
+
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = preferences.getString("weather", null);
+
+
+
         if (weatherString != null) {
             Weather weather = Utility.handleWeatherResponse(weatherString);
-            mWeatherId = weather.basic.weatherId;
-            showWeatherInfo(weather);
+
+            showWeatherInfo(weather,update);
         } else {
-            mWeatherId = getIntent().getStringExtra("weather_id");
+            Intent i=getIntent();
+            Bundle bundle=i.getExtras();
+            mWeatherId = bundle.getString("weather_id");
+//            getIntent().getStringExtra();
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(mWeatherId);
         }
@@ -96,14 +117,17 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 requestWeather(mWeatherId);
+//                loadPic(pic);
             }
         });
         String bingPic = preferences.getString("bing_pic", null);
         if (bingPic != null) {
             Glide.with(this).load(bingPic).into(bingPicImg);
         } else {
-            loadBingPic();
+          loadBingPic();
+//
         }
+//        loadPic(pic);
         navbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,7 +156,7 @@ public class WeatherActivity extends AppCompatActivity {
                                     .getDefaultSharedPreferences(WeatherActivity.this).edit();
                             editor.putString("weather", responseText);
                             editor.apply();
-                            showWeatherInfo(weather);
+                            showWeatherInfo(weather,update);
                         } else {
                             Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
@@ -154,7 +178,19 @@ public class WeatherActivity extends AppCompatActivity {
             }
         });
         loadBingPic();
+//        loadPic(pic);
+
     }
+//        private void loadPic(final String pic){
+//
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Glide.with(WeatherActivity.this).load(pic).into(bingPicImg);
+//                }
+//            });
+//        }
+
 
     private void loadBingPic() {
         String requestBingPic = "http://guolin.tech/api/bing_pic";
@@ -182,8 +218,10 @@ public class WeatherActivity extends AppCompatActivity {
         });
     }
 
-    private void showWeatherInfo(Weather weather) {
+    private void showWeatherInfo(Weather weather,int update) {
+        final String newPic;
         if (weather != null && "ok".equals(weather.status)) {
+            this.update=update;
             String cityName = weather.basic.cityName;
             String updateTime = weather.basic.update.updateTime.split(" ")[1];
             String degree = weather.now.temperature + " ℃";
@@ -193,6 +231,24 @@ public class WeatherActivity extends AppCompatActivity {
             degreeText.setText(degree);
             weatherInfoText.setText(weatherInfo);
             forecastLayout.removeAllViews();
+//            if(weatherInfo.contains("雨")){
+//                newPic = new String("android.resource://com.a2017.yvonne.coolweather.android/drawable/rain");
+//            }else if(weatherInfo.contains("风")){
+//                newPic = new String("android.resource://com.a2017.yvonne.coolweather.android/drawable/wind");
+//            }else if(weatherInfo.contains("雾")){
+//                newPic = new String("android.resource://com.a2017.yvonne.coolweather.android/drawable/fog");
+//            } else if(weatherInfo.contains("雪")){
+//                newPic = new String("android.resource://com.a2017.yvonne.coolweather.android/drawable/snow");
+//            } else if(weatherInfo.contains("晴")){
+//                newPic = new String("android.resource://com.a2017.yvonne.coolweather.android/drawable/sun");
+//            } else if(weatherInfo.contains("云")){
+//                newPic = new String("android.resource://com.a2017.yvonne.coolweather.android/drawable/cloud");
+//            } else {
+//                newPic = pic;
+//            }
+//            loadPic(newPic);
+
+
             for (Forecast forecast : weather.forecastList) {
                 View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
                 TextView dataText = (TextView) view.findViewById(R.id.date_text);
@@ -217,6 +273,7 @@ public class WeatherActivity extends AppCompatActivity {
             sportText.setText(sport);
             weatherLayout.setVisibility(View.VISIBLE);
             Intent intent = new Intent(this, AutoUpdateService.class);
+            intent.putExtra("u",update);
             startService(intent);
 
         } else {

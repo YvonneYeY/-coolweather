@@ -20,6 +20,7 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 public class AutoUpdateService extends Service {
+    private int updaTime;
     public AutoUpdateService() {
     }
     @Override
@@ -29,10 +30,11 @@ public class AutoUpdateService extends Service {
 
     @Override
     public int onStartCommand(Intent intent,  int flags, int startId) {
+        updaTime=intent.getExtras().getInt("u");
         updateWeather();
         updateBingPic();
         AlarmManager manager=(AlarmManager)getSystemService(ALARM_SERVICE);
-        int anHour=8*60*60*1000;
+        int anHour=updaTime*60*60*1000;
         long triggerAtTime= SystemClock.elapsedRealtime()+anHour;
         Intent i=new Intent(this,AutoUpdateService.class);
         PendingIntent pi=PendingIntent.getService(this,0,i,0);
